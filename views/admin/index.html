@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>笔记博客后台管理</title>
+    <link rel="stylesheet" href="../../static/plugins/layui/css/layui.css">
+    <link rel="stylesheet" href="../../static/plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../../static/plugins/animate/animate.css">
+    <style>
+        iframe{
+            height: calc(100% - 41px);
+            height: -webkit-calc(100% - 0px);
+            width: 100%;
+        }
+        .layui-layout-admin .layui-body {
+            bottom: 0px;
+        }
+        li,dd{
+            cursor: pointer;
+        }
+        .layui-body {
+            overflow: hidden;
+            overflow-y: hidden;
+        }
+    </style>
+</head>
+<body>
+<section class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo"><span><i class="layui-icon">&#xe628;</i>一花一世界</span> 后台管理</div>
+            <ul class="layui-nav layui-layout-left layui-hide layui-show-sm-inline-block">
+                <li class="layui-nav-item"><a HOME target="_blank"><i class="fa fa-home"></i> 前台首页</a></li>
+            </ul>
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item layui-hide-xs layui-hide-sm layui-show-md-block">
+                    <a href="javascript:;">
+                        <img src="../../static/img/head.jpg" class="layui-nav-img">
+                        一花一世界
+                    </a>
+                    <dl class="layui-nav-child" style="z-index: 666666666666666">
+                        <dd><a><i class="fa fa-user"></i> 我的资料</a></dd>
+                        <dd><a><i class="fa fa-cogs"></i> 偏好设置</a></dd>
+                        <hr>
+                        <dd><a><i class="fa fa-sign-out"></i> 退了</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+
+        <div id="left-menu" class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <ul class="layui-nav layui-nav-tree" lay-filter="">
+                    <li class="layui-nav-item">
+                        <a><i class="fa fa-keyboard-o"></i> 发布内容</a>
+                        <dl class="layui-nav-child">
+                            <dd rhref="../page/admin*article*article.html"><a><i class="fa fa-book"></i> 发布博文</a></dd>
+                            <dd rhref="../page/admin*article*addArticle.html" new="true"><a><i class="fa fa-sticky-note-o"></i> 撰写笔记</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a class="" href="javascript:;"><i class="fa fa-keyboard-o"></i> 内容管理</a>
+                        <dl class="layui-nav-child">
+                            <dd rhref="../page/admin*article*article.html"><a><i class="fa fa-book"></i> 博文管理</a></dd>
+                            <dd rhref="../page/admin*user*user.html"><a><i class="fa fa-book"></i> 用户管理</a></dd>
+                            <dd rhref="../page/admin*note*note.html"><a><i class="fa fa-book"></i> 笔记管理</a></dd>
+                            <dd rhref="../page/admin*articleType*articleType.html"><a><i class="fa fa-book"></i> 文章类型管理</a></dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="admin-body" class="layui-body">
+            <iframe name="section_iframe" src="" id="section_iframe" frameborder="0" scrolling="no" class="animated fadeInLeft"></iframe>
+        </div>
+    </div>
+</section>
+<script src="../../static/js/jquery-3.3.1.min.js"></script>
+<script src="../../static/plugins/layui/layui.js"></script>
+<script src="../../static/js/Tool.js"></script>
+<script>
+    var layer;
+    layui.use(['element','jquery','layer'], function () {
+        var element = layui.element , $ = layui.jquery , layer = layui.layer;;
+        $("a[HOME]").on("click" , function () {
+            $(this).attr("href",document.location.protocol+"//"+document.domain);
+        });
+        $("*[rhref]").on("click" , function () {
+            var iframe = $("#section_iframe") , newWin = $(this).attr("new");
+            var ths = this;
+            !newWin ? (function () {
+                iframe.removeClass("animated fadeInLeft");
+                iframe.attr("src",$(ths).attr("rhref"));
+                setTimeout(function () {
+                    iframe.addClass("animated fadeInLeft");
+                },10)
+            })():(function () {
+                layer.full(layer.open({
+                    type: 2,
+                    id:"AddArticle",
+                    title: '添加博客',
+                    content: '../page/admin*article*addArticle.html',
+                    area: [$(window).width()+"px", $(window).height()+"px"],
+                    btn: ['添加博客', '取消'],
+                    shadeClose: true,
+                    maxmin: true,
+                    btnAlign: 'c',
+                    yes:function (index, layero) {
+                        var user = JSON.parse(localStorage.getItem("user"));
+                        var addArticle = top.window[layero.find('iframe')[0]['name']];
+                        var articleData = addArticle.getArticle();
+                        articleData.User = user;
+                        tools.getServiceData({
+                            type: 'post',
+                            data:{data:JSON.stringify(articleData)},
+                            url:"/article/save",
+                            dataType: "JSON",
+                            success:function (data) {
+                                if (data.success && data.state === 200){
+                                    layer.msg("添加成功",{time : 2000,end:function () {
+                                            layer.closeAll()
+                                    }});
+                                }else{
+                                    layer.msg("添加失败",{time : 2000});
+                                }
+                            }
+                        });
+                    },
+                    btn2:function () {
+                        localStorage.removeItem("Article");
+                    },
+                    cancel:function () {
+                        localStorage.removeItem("Article");
+                    }
+                }));
+            })();
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="../../static/plugins/layui/css/layui.css">
+    <link rel="stylesheet" href="../../static/plugins/font-awesome/css/font-awesome.css">
+    <script type="text/javascript" src="../../static/plugins/layui/layui.js"></script>
+    <script type="text/javascript" src="../../static/js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="../../static/js/template.js"></script>
+    <style>
+
+        ::-webkit-scrollbar {
+            width: 14px;
+            height: 14px;
+        }
+
+        ::-webkit-scrollbar-track,
+        ::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            border: 6px solid transparent;
+        }
+
+        ::-webkit-scrollbar-track {
+            box-shadow: 1px 1px 5px rgba(0,0,0,.2) inset;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            min-height: 20px;
+            background-clip: content-box;
+            box-shadow: 0 0 0 5px #5FB878 inset;
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+        html, body {
+            height: 100%;
+            color: #333;
+            background: #f8f8f8 !important;
+            margin: 0px;
+            padding: 0px;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+        #article-list,.layui-tab-item{
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .layui-elem-field legend {
+            font-weight: 400;
+            color: #0C0C0C;
+            text-decoration: none;
+        }
+
+        .layui-tab {
+            margin:0;
+        }
+        .layui-container {
+            padding: 0px;
+        }
+
+        .layui-col-mdContent{
+            width: 95%;
+        }
+
+        @media screen and (min-width:768px) {
+            .layui-container {
+                width:100%;
+            }
+        }
+        @media screen and (max-width: 992px) {
+            .layui-col-md3 {
+                display: none;
+            }
+        }
+
+        @media screen and (min-width: 992px){
+            .layui-col-md3 {
+                width: 28%;
+            }
+            .layui-col-md9 {
+                width: 72%;
+            }
+        }
+
+
+        .layui-row:after, .layui-row:before {
+            content: '';
+            display: block;
+            clear: both;
+        }
+        .layui-col-xs6 , a[rhref]{
+            cursor: pointer;
+        }
+        .layui-field-title .layui-field-box.has-pic {
+            padding: 6px 0 0 0 !important;
+        }
+        layui-field-box {
+            color: #0C0C0C;
+            font-size: 14px;
+            line-height: 18px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+<div id="mine-body" class="layui-container">
+    <div class="layui-tab layui-tab-brief" lay-filter="mine-tab">
+        <ul class="layui-tab-title">
+            <li class="layui-this"><i class="fa fa-book"></i> 关于「博客系统」</li>
+            <li><i class="fa fa-user"></i> 关于「我」</li>
+            <li><i class="fa fa-chrome"></i> 关于「网站」</li>
+        </ul>
+        <div class="layui-tab-content">
+            <div class="layui-tab-item layui-show">
+                <div class="layui-row layui-col-space20 layui-mt10">
+                    <div class="layui-col-md7">
+                        <ul class="layui-timeline">
+                            <li class="layui-timeline-item">
+                                <i class="layui-icon layui-timeline-axis"></i>
+                                <div class="layui-timeline-content layui-text">
+                                    <h3 class="layui-timeline-title">2018年9月18号（使用<em>Beego</em>的第1.10.0版），</h3>
+                                    <p><em>layui 2.x</em>就是这版本的动力（自从出2.x就蠢蠢欲动，18年9月下旬开始搞的吧，历时将近1个月）。</p></p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="layui-col-md5">
+                        <div class="layui-text">
+                            <ul>
+                                <li>目前兼容google浏览器火狐浏览器IE稍有点瑕疵（后期会慢慢改进）</li>
+                                <li>将来会有一个<em>Java</em>语言版本的分支</li>
+                                <li>支持<em>markdown</em>功能</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="layui-tab-item">
+                <ul>
+                    <li>90后程序员，主研方向：
+                        <font color="#c24f4a">GO</font>、
+                        <font color="#c24f4a">区块链</font>、
+                        <font color="#c24f4a">JAVA</font>、
+                        <font color="#c24f4a">WEB</font>、
+                    </li>
+                    <li>current：Java技术经理</li>
+                    <li>GitHub：<a href="https://github.com/James-Csm" target="_blank">https://github.com/James-Csm</a></li>
+                    <li>邮箱：cuism@163.com</li>
+                </ul>
+                <b style="font-style: italic;">笔记博客（一花一世界）</b>
+                <p>是我最近打造的一款Go博客系统（后续将会出Java版本），包含博客、笔记系统以文件分享。</p>
+            </div>
+            <div class="layui-tab-item">
+                <p>服务器提供商：阿里云</p>
+                <p>服务器配置：CPU：1GHz，Memory：1G，Max Bandwidth：20Mbps，OS：CentOS 7.3&nbsp;</p>
+                <p><br></p>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    layui.use(['layer','element'], function () {
+        $(".layui-tab-item").css("height",document.documentElement.clientHeight+50+"px");
+        var layer = layui.layer , element = layui.element;
+        top.window.Blog.UpdateTitle(NavTitleTemplate.replaceAll("<#Title>","关于网站・博客・关于我"))
+        element.on('tab(mine-tab)', function (data) {
+        });
+    });
+</script>
+</html>

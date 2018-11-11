@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../../static/plugins/layui/css/layui.css"  media="all">
+    <style>
+        .layui-form-item .layui-input-inline {
+            margin-right: 0;
+        }
+        .layui-input, .layui-select, .layui-textarea {
+            height: 32px;
+        }
+        .layui-table, .layui-table-view {
+            margin:0;
+        }
+        .layui-form-item {
+            margin-bottom: 0px;
+        }
+        .layui-table-tool {
+            padding:0px;
+            min-height: 0px;
+            line-height: 0px;
+        }
+        .layui-table-tool-self {
+            top: 0px;
+        }
+        .layui-form-item .layui-input-inline {
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+
+<table class="layui-hide" id="article" lay-filter="NoteToolbar"></table>
+<script type="text/html" id="NoteToolbar">
+    <div class="layui-form-item layui-form-pane">
+        <div class="layui-inline">
+            <div class="layui-input-inline">
+                <input type="text" class="layui-input" article-query>
+            </div>
+            <div class="layui-input-inline" >
+                <button class="layui-btn layui-btn-sm" lay-event="query">查询</button>
+                <button class="layui-btn layui-btn-sm" lay-event="delete">删除</button>
+                <button class="layui-btn layui-btn-sm" lay-event="update">修改</button>
+                <button class="layui-btn layui-btn-sm" lay-event="save">添加</button>
+            </div>
+        </div>
+    </div>
+</script>
+<script src="../../../static/plugins/layui/layui.js" charset="utf-8"></script>
+<script src="../../../static/js/jquery-3.3.1.min.js" charset="utf-8"></script>
+<script src="../../../static/js/Tool.js" charset="utf-8"></script>
+
+<script>
+layui.use('table', function(){
+    var table = layui.table, form = layui.form , layer = layui.layer,
+    article = table.render({
+             elem: '#article'
+            ,toolbar: '#NoteToolbar'
+            ,url:'/Note/query'
+            ,width: $(window).width()
+            ,height: $(window).height()/1.5
+            ,cellMinWidth: 100
+            ,cols: [[
+                {type:'checkbox', fixed: 'left'}
+                ,{field:'Uuid',  title: '序号', fixed: 'left',hide:true}
+                ,{field:'Title',  title: '标题', sort: true ,width:150}
+                ,{field:'Content', width:350, title: '内容'}
+                ,{field:'CreateDate',width:180, title: '创建时间',sort: true}
+                ,{field:'ArticleType.TypeName', sort: true ,width:230 , title: '文章类型',templet:function (data) {
+                        return data.ArticleType.TypeName;
+                    }}
+                ,{field:'User', width:150 ,title: '创建人',templet:function (data) {
+                        return data.User.UserName;
+                    }}
+            ]]
+            ,page: {
+                 groups: 1
+                ,limit:35
+                ,limits:[35]
+            }
+            ,parseData: function(res){
+                return {
+                    "code": 0,
+                    "msg": res.data.data.message,
+                    "count": res.count,
+                    "data": res.data.data
+                };
+            }
+        });
+
+    form.on('checkbox(Publisher)', function(obj){
+        alert(JSON.stringify(obj)+"发布")
+    });
+    //头工具栏事件
+    table.on('toolbar(NoteToolbar)', function(obj){
+        var checkStatus = table.checkStatus(obj.config.id);
+        switch(obj.event){
+            case 'delete':
+                var data = checkStatus.data;
+                var uuids = "";
+                $.each(data, function (key , val) {
+                    uuids += val.Uuid+","
+                })
+                uuids = uuids.substring(0 , uuids.length-1);
+                 tools.getServiceData({
+                     type: 'post',
+                     data:{uuids:uuids},
+                     url:"/Note/del",
+                     dataType: "JSON",
+                     success:function (data) {
+                         (data.success && data.state === 200) ?     article.reload({}):layer.msg(data.message,{time : 2000});
+                     }
+                 });
+                break;
+            case 'update':
+                var data = checkStatus.data;  //获取选中行数据
+                data.length === 1 ? (function () {
+                    tools.getServiceData({
+                        type: 'get',
+                        url:"/Note/getNote/"+data[0].Uuid,
+                        dataType: "JSON",
+                        success:function (resultData) {
+                            localStorage.setItem("Note",JSON.stringify(resultData))
+                            top.layer.full(top.layer.open({
+                                id:"ArticleUpdate",
+                                type: 2,
+                                title: '修改笔记',
+                                content: '../page/admin*note*addNote.html',
+                                area: [$(window).width()+"px", $(window).height()+"px"],
+                                btn: ['修改笔记', '取消'],
+                                shadeClose: true,
+                                maxmin: true,
+                                btnAlign: 'c',
+                                yes:function (index, layero) {
+                                    var articleUpdate = top.window[layero.find('iframe')[0]['name']];
+                                    var articleData = articleUpdate.getArticle();
+                                    articleData =  $.extend(resultData , articleData,true);
+                                    tools.getServiceData({
+                                        type: 'post',
+                                        data:{data:JSON.stringify(articleData)},
+                                        url:"/Note/update",
+                                        dataType: "JSON",
+                                        success:function (data) {
+                                            if (data.success && data.state === 200){
+                                                top.layer.msg("修改成功",{time : 2000,end:function () {
+                                                     top.layer.closeAll()
+                                                 }});
+                                            }else{
+                                                top.layer.msg("修改失败",{time : 2000});
+                                            }
+                                        }
+                                    });
+                                },
+                                btn2:function (index, layero) {
+                                    localStorage.removeItem("Note");
+                                },
+                                cancel:function () {
+                                    localStorage.removeItem("Note");
+                                }
+                            }));
+                        }
+                    });
+                })():layer.msg("只能选择一条数据修改",{time : 2000});
+                break;
+            case 'query':
+                var title = $("input[article-query]").val();
+                article.reload({where: {Title:title},page: {curr: 1}});
+                break;
+            case 'save':
+                top.layer.full(top.layer.open({
+                    type: 2,
+                    id:"AddNote",
+                    title: '添加笔记',
+                    content: '../page/admin*note*addNote.html',
+                    area: [$(window).width()+"px", $(window).height()+"px"],
+                    btn: ['添加笔记', '取消'],
+                    shadeClose: true,
+                    maxmin: true,
+                    btnAlign: 'c',
+                    yes:function (index, layero) {
+                        var user = JSON.parse(localStorage.getItem("user"));
+                        var articleData = top.window[layero.find('iframe')[0]['name']].getArticle();
+                        articleData.User = user;
+                        tools.getServiceData({
+                            type: 'post',
+                            data:{data:JSON.stringify(articleData)},
+                            url:"/Note/save",
+                            dataType: "JSON",
+                            success:function (data) {
+                                if (data.success && data.state === 200){
+                                    top.layer.msg("添加成功",{time : 2000,end:function () {
+                                            top.layer.closeAll()
+                                        }});
+                                }else{
+                                    top.layer.msg("添加失败",{time : 2000});
+                                }
+                            }
+                        });
+                    },
+                    btn2:function () {
+                        localStorage.removeItem("Note");
+                    },
+                    cancel:function () {
+                        localStorage.removeItem("Note");
+                    }
+                }));
+                break;
+
+        };
+    });
+});
+</script>
+
+</body>
+</html>

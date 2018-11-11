@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>layui</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../../static/plugins/layui/css/layui.css">
+
+    <script type="text/javascript" src="../../static/plugins/layui/layui.js"></script>
+    <script type="text/javascript" src="../../static/js/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="../../static/js/template.js"></script>
+
+    <link rel="stylesheet" href="../../static/plugins/editor.md/css/editormd.preview.css" />
+
+    <script src="../../static/plugins/editor.md/lib/marked.min.js"></script>
+    <script src="../../static/plugins/editor.md/lib/prettify.min.js"></script>
+
+    <script src="../../static/plugins/editor.md/lib/raphael.min.js"></script>
+    <script src="../../static/plugins/editor.md/lib/underscore.min.js"></script>
+    <script src="../../static/plugins/editor.md/lib/sequence-diagram.min.js"></script>
+    <script src="../../static/plugins/editor.md/lib/flowchart.min.js"></script>
+    <script src="../../static/plugins/editor.md/lib/jquery.flowchart.min.js"></script>
+
+    <script src="../../static/plugins/editor.md/editormd.js"></script>
+
+    <style>
+
+        ::-webkit-scrollbar {
+            width: 14px;
+            height: 14px;
+        }
+
+        ::-webkit-scrollbar-track,
+        ::-webkit-scrollbar-thumb {
+            border-radius: 999px;
+            border: 6px solid transparent;
+        }
+
+        ::-webkit-scrollbar-track {
+            box-shadow: 1px 1px 5px rgba(0,0,0,.2) inset;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            min-height: 20px;
+            background-clip: content-box;
+            box-shadow: 0 0 0 5px #5FB878 inset;
+        }
+
+        ::-webkit-scrollbar-corner {
+            background: transparent;
+        }
+        html, body {
+            height: 100%;
+            color: #333;
+            background: #f8f8f8 !important;
+            margin: 0px;
+            padding: 0px;
+            -moz-osx-font-smoothing: grayscale;
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+        }
+        #article-list{
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        .layui-elem-field legend {
+            font-weight: 400;
+            color: #0C0C0C;
+            text-decoration: none;
+        }
+
+        .layui-tab {
+            margin:0;
+        }
+        .layui-container {
+            padding: 0px;
+        }
+
+        .layui-col-mdContent{
+            width: 95%;
+        }
+
+        @media screen and (min-width:768px) {
+            .layui-container {
+                width:100%;
+            }
+        }
+        @media screen and (max-width: 992px) {
+            .layui-col-md3 {
+                display: none;
+            }
+        }
+
+        @media screen and (min-width: 992px){
+            .layui-col-md3 {
+                width: 28%;
+            }
+            .layui-col-md9 {
+                width: 72%;
+            }
+        }
+        .layui-row:after, .layui-row:before {
+            content: '';
+            display: block;
+            clear: both;
+        }
+        .layui-col-xs6 , a[rhref]{
+            cursor: pointer;
+        }
+        .layui-field-title .layui-field-box.has-pic {
+            padding: 6px 0 0 0 !important;
+        }
+        layui-field-box {
+            color: #0C0C0C;
+            font-size: 14px;
+            line-height: 18px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+<section id="article-list" class="layui-collapse" lay-accordion="" lay-filter="article">
+</section>
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+<script>
+    $("#article-list").css("height",document.documentElement.clientHeight-40+"px");
+    var Note = (function () {
+       var  element , flow;
+       var  getParameter = function (limt, title) {
+            return {limt:limt, Title:title};
+        };
+        var _parsingDocuments = function (uuid) {
+            return editormd.markdownToHTML(uuid, {
+                markdown        : $("#"+uuid).find("textarea").text() ,
+                htmlDecode      : "style,script,iframe"
+            });
+        }
+        var _bindingEventNote  = function () {
+            element.on('collapse(article)', function(data){
+                _parsingDocuments($(this).attr("uuid"))
+            });
+        }
+        var getNoteData = function (parameter) {
+            return top.window.Blog.getServiceData({
+                async:false,
+                type: 'get',
+                data:parameter,
+                url:"/Note/query",
+                dataType: "JSON"})
+        }
+        NoteService = {
+            render:function () {
+                var tht = this;
+                layui.use(['flow','element'], function(){
+                    flow = layui.flow, element = layui.element;
+                    tht._LoadData("" , false);
+                });
+            },
+            _LoadData:function(title , isQuery){
+                isQuery ?  $("#article-list").empty() : "";
+                var ths = this;
+                flow.load({
+                    elem: '#article-list'
+                    ,scrollElem: '#article-list'
+                    ,done: function(page, next){
+                        var parameter = getParameter(page,title),
+                                data =  getNoteData(parameter);
+                        data.data.data.length > 0 ? (function () {
+                            var list = [];
+                            top.window.Blog.UpdateTitleNumber(data["count"])
+                            $.each(data.data.data,function (key , data) {
+                                var tmp = NoteArticleTemplate.replaceAll("<#Title>",new Date(data["CreateDate"]).format("yyyy年MM月dd日")+">>>"+data["Title"])
+                                        .replaceAll("<#content>",data["Content"])
+                                        .replaceAll("<#uuid>",data["Uuid"])
+                                list.push(tmp);
+                            })
+                            next(list.join(''), page < Number(data["countPage"]));
+                        })():"";
+                        element.render()
+                        _bindingEventNote();
+                    }
+                });
+            }
+        };
+        var instance;
+        function init(){
+            return NoteService;
+        }
+        return {
+            getInstance:function () {
+                return !instance ? init() : instance;
+            }
+        }
+    })();
+    Note.getInstance().render();
+</script>
+
+</body>
+</html>
